@@ -42,27 +42,27 @@ copy %pathtome%library.swf %pathtome%platforms\win\x64\release
 
 REM Copy native libraries into place.
 echo Copying native libraries into place.
-
+echo Copying %projectName%.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%.dll %pathtome%platforms\win\x86\release
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%.dll %pathtome%platforms\win\x64\release
 
+echo Copying %projectName%Lib.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%Lib.dll %AIR_PATH%%projectName%Lib.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%Lib.pdb %AIR_PATH%%projectName%Lib.pdb
-
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%Lib.dll %AIR_PATH_64%%projectName%Lib.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%Lib.pdb %AIR_PATH_64%%projectName%Lib.pdb
-
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%Lib.dll %pathtome%..\..\c_sharp_libs_x86\%projectName%Lib.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%Lib.dll %pathtome%..\..\c_sharp_libs_x64\%projectName%Lib.dll
 
+echo Copying FreSharpCore.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharpCore.dll %AIR_PATH%FreSharpCore.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharpCore.pdb %AIR_PATH%FreSharpCore.pdb
-
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharpCore.dll %AIR_PATH_64%FreSharpCore.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharpCore.pdb %AIR_PATH_64%FreSharpCore.pdb
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharpCore.dll %pathtome%..\..\c_sharp_libs_x64\FreSharpCore.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharpCore.dll %pathtome%..\..\c_sharp_libs_x86\FreSharpCore.dll
 
+echo Copying FreSharp.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharp.dll %pathtome%..\..\c_sharp_libs_x86\FreSharp.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharp.dll %pathtome%..\..\c_sharp_libs_x64\FreSharp.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharp.dll %AIR_PATH%FreSharp.dll
@@ -81,3 +81,5 @@ call DEL /F /Q /A %pathtome%library.swf
 call DEL /F /Q /A %pathtome%catalog.xml
 
 echo FIN
+
+call %pathtome%build-myapp.bat
