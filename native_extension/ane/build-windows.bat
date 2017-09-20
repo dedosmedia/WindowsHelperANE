@@ -70,6 +70,16 @@ copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharp.pdb %
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharp.dll %AIR_PATH_64%FreSharp.dll
 copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharp.pdb %AIR_PATH_64%FreSharp.pdb
 
+echo Copying dlls from Nuget packages
+copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\DotNetZip.dll %pathtome%..\..\c_sharp_libs_x86\DotNetZip.dll
+copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\DotNetZip.dll %pathtome%..\..\c_sharp_libs_x64\DotNetZip.dll
+copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\AWSSDK.Core.dll %pathtome%..\..\c_sharp_libs_x86\AWSSDK.Core.dll
+copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\AWSSDK.Core.dll %pathtome%..\..\c_sharp_libs_x64\AWSSDK.Core.dll
+copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_x86\AWSSDK.S3.dll
+copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_x64\AWSSDK.S3.dll
+
+
+
 REM Run the build command.
 echo Building Release.
 call %AIR_PATH%adt.bat -package -target ane %pathtome%%projectName%.ane %pathtome%extension_win.xml -swc %pathtome%%projectName%.swc ^

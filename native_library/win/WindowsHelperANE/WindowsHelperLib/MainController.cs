@@ -10,6 +10,10 @@ using static WindowsHelperLib.ShowWindowCommands;
 using FREObject = System.IntPtr;
 using FREContext = System.IntPtr;
 using Hwnd = System.IntPtr;
+using System.Text;
+using Ionic.Zip;
+using System.IO;
+using Amazon.S3;
 
 namespace WindowsHelperLib {
     public class MainController : FreSharpController {
@@ -19,6 +23,9 @@ namespace WindowsHelperLib {
         private Hwnd _foundWindow;
         private readonly Dictionary<string, DisplayDevice> _displayDeviceMap = new Dictionary<string, DisplayDevice>();
         private bool _isHotKeyManagerRegistered;
+        private AmazonS3Client client;
+
+        
 
         public string[] GetFunctions() {
             FunctionsDict =
@@ -34,6 +41,18 @@ namespace WindowsHelperLib {
                     {"registerHotKey", RegisterHotKey},
                     {"unregisterHotKey", UnregisterHotKey},
                     {"getNumLogicalProcessors",GetNumLogicalProcessors},
+					
+					  
+                    {"findTaskBar", FindTaskBar},
+                    {"isProgramRunning", IsProgramRunning},
+                    {"unzipFile", UnzipFile},
+                    {"testCV", TestCV},
+                    {"test", Test},
+                    {"makeTopMostWindow", MakeTopMostWindow},
+                    {"makeNoTopMostWindow", MakeNoTopMostWindow},
+                    {"makeBottomWindow", MakeBottomWindow},
+                    {"resizeWindow", ResizeWindow}
+                    
 
 
                 };
@@ -285,6 +304,209 @@ namespace WindowsHelperLib {
             };
             Process.Start(info);
             return new FreObjectSharp(true).RawValue;
+        }
+		
+		
+		/* DEDOSMEDIA FEATURES*/
+		
+		public FREObject FindTaskBar(FREContext ctx, uint argc, FREObject[] argv)
+        {
+
+            Hwnd handler = WinApi.FindWindow("Shell_TrayWnd", null);
+            if( handler == IntPtr.Zero)
+                return new FreObjectSharp("FindTaskBar:: IS NOT FOUND").RawValue;
+
+            _foundWindow = handler;
+            return new FreObjectSharp("FindTaskBar:: FOUND!!!!!!!").RawValue;
+            
+            //return new FreObjectSharp("OMITO BUSQUEDA").RawValue;
+        }
+
+        public FREObject IsProgramRunning(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            var programPath = Convert.ToString(new FreObjectSharp(argv[0]).Value);
+            foreach (var pList in Process.GetProcessesByName(programPath))
+            {                
+                return new FreObjectSharp(true).RawValue;
+            }
+            return new FreObjectSharp(false).RawValue;
+        }
+
+        public FREObject Test(FREContext ctx, uint argc, FREObject[] argv)
+        {
+
+            var test = Convert.ToString(new FreObjectSharp(argv[0]).Value);
+            string str = "Testing S3 client";
+            /*
+            Console.WriteLine("Listing objects stored in a bucket");
+
+            using (client = new AmazonS3Client(Amazon.RegionEndpoint.USEast1))
+            {
+                str += "Listing objects stored in a bucket";
+                //ListingObjects();
+                str += "despues de async. \n";
+                //SendEvent("MY_EVENT", "this is a test");
+                //Trace("HOLA MUNDO");
+            }
+            */
+            Trace("Prueba de Test");
+            return str.ToFREObject();
+            //return new FreObjectSharp(str).RawValue;
+
+        }
+
+        public FREObject ReadIni(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            var section = Convert.ToString(new FreObjectSharp(argv[0]).Value);
+            var key = Convert.ToString(new FreObjectSharp(argv[1]).Value);
+            var filepath = Convert.ToString(new FreObjectSharp(argv[2]).Value);
+            string str = ReadValue(section, key, filepath, "");
+            return new FreObjectSharp(str).RawValue;
+        }
+
+        public string ReadValue(string section, string key, string filePath, string defaultValue = "")
+        {
+            var value = new StringBuilder(512);
+            WinApi.GetPrivateProfileString(section, key, defaultValue, value, value.Capacity, filePath);
+            return value.ToString();
+        }
+
+        /*
+        async void ListingObjects()
+        {
+
+            //await ListingObjectsAsync();
+        }
+
+        // List S3 bucket objects
+        
+        async Task<string> ListingObjectsAsync()
+        {
+           
+            string str = "";
+            try
+            {
+                ListObjectsRequest request = new ListObjectsRequest
+                {
+                    BucketName = "keshot-dedosmedia",
+                    MaxKeys = 2
+                };
+                do
+                {
+                    ListObjectsResponse response = await client.ListObjectsAsync(request);
+                    // Process response.
+                    foreach (S3Object entry in response.S3Objects)
+                    {
+                        str += "key = " + entry.Key + " size = " + entry.Size+"\n";       
+                    }
+
+                    
+
+                    // If response is truncated, set the marker to get the next 
+                    // set of keys.
+                    if (response.IsTruncated)
+                    {
+                        request.Marker = response.NextMarker;
+                    }
+                    else
+                    {
+                        request = null;
+                    }
+                } while (request != null);
+            }
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                if (amazonS3Exception.ErrorCode != null &&
+                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId")
+                    ||
+                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                {
+                    Console.WriteLine("Check the provided AWS Credentials.");
+                    Console.WriteLine(
+                    "To sign up for service, go to http://aws.amazon.com/s3");
+                }
+                else
+                {
+                    Console.WriteLine(
+                     "Error occurred. Message:'{0}' when listing objects",
+                     amazonS3Exception.Message);
+                }
+            }
+            return str;
+        }
+        */
+
+        public FREObject TestCV(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            /*
+            String win1 = "Test Window"; //The name of the window
+            
+            CvInvoke.NamedWindow(win1); //Create the window using the specific name
+
+            Mat img = new Mat(200, 400, DepthType.Cv8U, 3); //Create a 3 channel image of 400x200
+            img.SetTo(new Bgr(255, 0, 0).MCvScalar); // set it to Blue color
+
+            //Draw "Hello, world." on the image using the specific font
+            CvInvoke.PutText(
+               img,
+               "Hello, world",
+               new System.Drawing.Point(10, 80),
+               FontFace.HersheyComplex,
+               1.0,
+               new Bgr(0, 255, 0).MCvScalar);
+
+
+            CvInvoke.Imshow(win1, img); //Show the image
+            CvInvoke.WaitKey(0);  //Wait for the key pressing event
+            CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
+            */
+            return new FreObjectSharp(true).RawValue;
+        }
+
+        public FREObject UnzipFile(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            var zipFile = Convert.ToString(new FreObjectSharp(argv[0]).Value);
+            var outputDirectory = Convert.ToString(new FreObjectSharp(argv[1]).Value);
+            var password = Convert.ToString(new FreObjectSharp(argv[2]).Value);
+            
+            if (!ZipFile.CheckZipPassword(zipFile, password))
+            {
+                return new FreObjectSharp(false).RawValue;
+            }
+            ZipFile zip = ZipFile.Read(zipFile);
+            zip.Password = password;
+            Directory.CreateDirectory(outputDirectory);
+            zip.ExtractAll(outputDirectory, ExtractExistingFileAction.OverwriteSilently);
+            zip.Dispose();
+            
+            return new FreObjectSharp(true).RawValue;
+        }
+
+        public FREObject MakeTopMostWindow(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            var value = WinApi.SetWindowPos(_foundWindow, new IntPtr(-1), 0, 0, 0, 0, WindowPositionFlags.SWP_NOSIZE | WindowPositionFlags.SWP_NOMOVE);
+            return new FreObjectSharp(value).RawValue;
+        }
+
+        public FREObject MakeBottomWindow(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            var value = WinApi.SetWindowPos(_foundWindow, new IntPtr(1), 0, 0, 0, 0, WindowPositionFlags.SWP_NOSIZE | WindowPositionFlags.SWP_NOMOVE);
+            return new FreObjectSharp(value).RawValue;
+        }
+
+        public FREObject MakeNoTopMostWindow(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            var value = WinApi.SetWindowPos(_foundWindow, new IntPtr(-2), 0, 0, 0, 0, WindowPositionFlags.SWP_NOSIZE | WindowPositionFlags.SWP_NOMOVE);
+            return new FreObjectSharp(value).RawValue;
+        }
+
+        public FREObject ResizeWindow(FREContext ctx, uint argc, FREObject[] argv) {            
+            var newX = Convert.ToInt32(new FreObjectSharp(argv[0]).Value);
+            var newY = Convert.ToInt32(new FreObjectSharp(argv[1]).Value);
+            var newW = Convert.ToInt32(new FreObjectSharp(argv[2]).Value);
+            var newH = Convert.ToInt32(new FreObjectSharp(argv[3]).Value);
+            var value = WinApi.SetWindowPos(_foundWindow, new IntPtr(0), newX, newY, newW, newH, WindowPositionFlags.SWP_NOZORDER);
+            return new FreObjectSharp(value).RawValue;
         }
     }
 }

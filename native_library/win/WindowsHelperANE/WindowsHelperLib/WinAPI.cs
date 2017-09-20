@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-
+using System.Text;
 using Hwnd = System.IntPtr;
 // Credits: https://github.com/prasannavl/WinApi
 namespace WindowsHelperLib {
@@ -10,6 +10,34 @@ namespace WindowsHelperLib {
         public static int EnumCurrentSettings = -1;
         public const string User32 = "user32";
         public const string Kernel32 = "kernel32";
+
+        /* DEDOSMEDIA FEATURES */
+
+        [DllImport(Kernel32, CharSet = CharSet.Unicode)]
+        public static extern int GetPrivateProfileString(string section, string key,
+        string defaultValue, StringBuilder value, int size, string filePath);
+
+        [DllImport(Kernel32, CharSet = CharSet.Unicode)]
+        static extern int GetPrivateProfileString(string section, string key, string defaultValue,
+            [In, Out] char[] value, int size, string filePath);
+
+        [DllImport(Kernel32, CharSet = CharSet.Auto)]
+        public static extern int GetPrivateProfileSection(string section, IntPtr keyValue,
+            int size, string filePath);
+
+        [DllImport(Kernel32, CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool WritePrivateProfileString(string section, string key,
+            string value, string filePath);
+
+        [DllImport(User32, SetLastError = true)]
+        public static extern Hwnd FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport(User32, SetLastError = true)]
+        public static extern Hwnd FindWindowEx(Hwnd parentHandle, Hwnd childAfter, string className, string windowTitle);
+
+
+        /* END */
 
         [DllImport(User32, ExactSpelling = true)]
         public static extern bool ShowWindow(Hwnd hwnd, ShowWindowCommands nCmdShow);
