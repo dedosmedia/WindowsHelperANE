@@ -3,6 +3,7 @@
  */
 package com.tuarua {
 
+
 import flash.desktop.NativeApplication;
 import flash.events.EventDispatcher;
 import flash.events.StatusEvent;
@@ -22,7 +23,7 @@ public class WindowsHelperANE extends EventDispatcher {
         _isSupported = true;
         trace("[" + name + "] Initalizing ANE...");
         try {
-           ctx = ExtensionContext.createExtensionContext("com.tuarua." + name, null);
+            ctx = ExtensionContext.createExtensionContext("com.tuarua." + name, null);
             ctx.addEventListener(StatusEvent.STATUS, gotEvent);
         } catch (e:Error) {
             trace(e.message);
@@ -33,7 +34,7 @@ public class WindowsHelperANE extends EventDispatcher {
 
     private function gotEvent(event:StatusEvent):void {
         var pObj:Object;
-        //trace(event.level);
+        trace("EVENT",event.level);
         switch (event.level) {
             case "TRACE":
                 trace(event.code);
@@ -60,9 +61,51 @@ public class WindowsHelperANE extends EventDispatcher {
         return ctx.call("findWindowByTitle", searchTerm) as String;
     }
 
+    public function findTaskBar():String {
+        return ctx.call("findTaskBar")  as String;
+    }
+
+    public function isProgramRunning(programPath:String):Boolean {
+        return ctx.call("isProgramRunning", programPath) as Boolean;
+    }
+
+    public function unzipFile(zipFile:String, outputDirectory:String, password:String):Boolean {
+        return ctx.call("unzipFile", zipFile, outputDirectory, password) as Boolean;
+    }
+
+    public function testCV():Boolean {
+        return ctx.call("testCV") as Boolean;
+    }
+
     public function showWindow(maximise:Boolean = false):void {
         ctx.call("showWindow", maximise);
     }
+
+    public function hideWindow():void {
+        ctx.call("hideWindow");
+    }
+
+    public function test(test:String):String {
+        return ctx.call("test",test) as String;
+    }
+
+    public function resizeWindow(x:Number = 0, y:Number = 0, width:Number = 0, height:Number = 0):Boolean {
+        return ctx.call("resizeWindow", x, y, width, height)  as Boolean;
+    }
+
+    public function makeTopMostWindow():Boolean {
+        return ctx.call("makeTopMostWindow")  as Boolean;
+    }
+
+    public function makeNoTopMostWindow():Boolean {
+        return ctx.call("makeNoTopMostWindow")  as Boolean;
+    }
+
+    public function makeBottomWindow():Boolean {
+        return ctx.call("makeBottomWindow")  as Boolean;
+    }
+
+
 
     public function restartApp(delay:int = 2):Boolean {
         var success:Boolean = ctx.call("restartApp", delay);
@@ -75,6 +118,7 @@ public class WindowsHelperANE extends EventDispatcher {
     public function setForegroundWindow():void {
         ctx.call("setForegroundWindow");
     }
+
 
     public function getDisplayDevices():Vector.<DisplayDevice> {
         return ctx.call("getDisplayDevices") as Vector.<DisplayDevice>;
@@ -95,6 +139,7 @@ public class WindowsHelperANE extends EventDispatcher {
     public function getNumLogicalProcessors():int {
         return int(ctx.call("getNumLogicalProcessors"));
     }
+
 
     public function isSupported():Boolean {
         return _isSupported;
