@@ -140,6 +140,10 @@ public class WindowsHelperANE extends EventDispatcher {
         return int(ctx.call("getNumLogicalProcessors"));
     }
 
+    public function readIniValue(section:String, key:String, filepath:String):String {
+        return ctx.call("readIniValue",section,key,filepath) as String;
+    }
+
 
     public function isSupported():Boolean {
         return _isSupported;
