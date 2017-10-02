@@ -13,7 +13,10 @@ using Hwnd = System.IntPtr;
 using System.Text;
 using Ionic.Zip;
 using System.IO;
+
 using Amazon.S3;
+using System.Threading.Tasks;
+using Amazon.S3.Model;
 
 namespace WindowsHelperLib {
     public class MainController : FreSharpController {
@@ -51,8 +54,9 @@ namespace WindowsHelperLib {
                     {"makeTopMostWindow", MakeTopMostWindow},
                     {"makeNoTopMostWindow", MakeNoTopMostWindow},
                     {"makeBottomWindow", MakeBottomWindow},
-                    {"resizeWindow", ResizeWindow}
-                    
+                    {"resizeWindow", ResizeWindow},
+                    {"readIniValue", ReadIniValue}
+
 
 
                 };
@@ -311,15 +315,20 @@ namespace WindowsHelperLib {
 		
 		public FREObject FindTaskBar(FREContext ctx, uint argc, FREObject[] argv)
         {
-
+            
             Hwnd handler = WinApi.FindWindow("Shell_TrayWnd", null);
             if( handler == IntPtr.Zero)
                 return new FreObjectSharp("FindTaskBar:: IS NOT FOUND").RawValue;
 
+            int dwExtStyle = WinApi.GetWindowLong(handler, -20);
+            dwExtStyle &= ~0x00000008;
+
+            WinApi.SetWindowLong(handler, -20, dwExtStyle);
+
             _foundWindow = handler;
             return new FreObjectSharp("FindTaskBar:: FOUND!!!!!!!").RawValue;
             
-            //return new FreObjectSharp("OMITO BUSQUEDA").RawValue;
+            
         }
 
         public FREObject IsProgramRunning(FREContext ctx, uint argc, FREObject[] argv)
@@ -343,7 +352,7 @@ namespace WindowsHelperLib {
             using (client = new AmazonS3Client(Amazon.RegionEndpoint.USEast1))
             {
                 str += "Listing objects stored in a bucket";
-                //ListingObjects();
+                ListingObjects();
                 str += "despues de async. \n";
                 //SendEvent("MY_EVENT", "this is a test");
                 //Trace("HOLA MUNDO");
@@ -355,7 +364,7 @@ namespace WindowsHelperLib {
 
         }
 
-        public FREObject ReadIni(FREContext ctx, uint argc, FREObject[] argv)
+        public FREObject ReadIniValue(FREContext ctx, uint argc, FREObject[] argv)
         {
             var section = Convert.ToString(new FreObjectSharp(argv[0]).Value);
             var key = Convert.ToString(new FreObjectSharp(argv[1]).Value);
@@ -374,8 +383,9 @@ namespace WindowsHelperLib {
         /*
         async void ListingObjects()
         {
-
-            //await ListingObjectsAsync();
+            Trace("listingObject");
+            string data = await ListingObjectsAsync();
+            Trace(data);
         }
 
         // List S3 bucket objects
@@ -393,8 +403,10 @@ namespace WindowsHelperLib {
                 };
                 do
                 {
-                    ListObjectsResponse response = await client.ListObjectsAsync(request);
+                    Task<ListObjectsResponse> answer =  client.ListObjectsAsync(request);
                     // Process response.
+
+                    ListObjectsResponse response = await answer;
                     foreach (S3Object entry in response.S3Objects)
                     {
                         str += "key = " + entry.Key + " size = " + entry.Size+"\n";       
@@ -435,6 +447,7 @@ namespace WindowsHelperLib {
             return str;
         }
         */
+        
 
         public FREObject TestCV(FREContext ctx, uint argc, FREObject[] argv)
         {
@@ -490,7 +503,7 @@ namespace WindowsHelperLib {
 
         public FREObject MakeBottomWindow(FREContext ctx, uint argc, FREObject[] argv)
         {
-            var value = WinApi.SetWindowPos(_foundWindow, new IntPtr(1), 0, 0, 0, 0, WindowPositionFlags.SWP_NOSIZE | WindowPositionFlags.SWP_NOMOVE);
+            var value = WinApi.SetWindowPos(_foundWindow, new IntPtr(1), 0, 0, 0, 0, WindowPositionFlags.SWP_NOSIZE | WindowPositionFlags.SWP_NOMOVE | WindowPositionFlags.SWP_NOZORDER | WindowPositionFlags.SWP_FRAMECHANGED);
             return new FreObjectSharp(value).RawValue;
         }
 

@@ -23,16 +23,16 @@ extern "C" {
 			,MAP_FUNCTION(unregisterHotKey)
 			,MAP_FUNCTION(getNumLogicalProcessors)
 			
-			,MAP_FUNCTION(findTaskbar)
+			,MAP_FUNCTION(findTaskBar)
 			,MAP_FUNCTION(isProgramRunning)
 			,MAP_FUNCTION(unzipFile)
 			,MAP_FUNCTION(testCV)
 			,MAP_FUNCTION(test)
-			,MAP_FUNCTION(findTaskbar)
 			,MAP_FUNCTION(makeTopMostWindow)
 			,MAP_FUNCTION(makeNoTopMostWindow)
 			,MAP_FUNCTION(makeBottomWindow)
 			,MAP_FUNCTION(resizeWindow)
+			,MAP_FUNCTION(readIniValue)
 
 		};
 

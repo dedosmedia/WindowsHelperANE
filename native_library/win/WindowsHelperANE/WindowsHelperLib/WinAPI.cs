@@ -37,6 +37,13 @@ namespace WindowsHelperLib {
         public static extern Hwnd FindWindowEx(Hwnd parentHandle, Hwnd childAfter, string className, string windowTitle);
 
 
+        [DllImport(User32, SetLastError = true)]
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport(User32)]
+        public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+
         /* END */
 
         [DllImport(User32, ExactSpelling = true)]
