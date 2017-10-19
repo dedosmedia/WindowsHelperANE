@@ -85,8 +85,8 @@ public class WindowsHelperANE extends EventDispatcher {
         ctx.call("hideWindow");
     }
 
-    public function test(test:String):String {
-        return ctx.call("test",test) as String;
+    public function test(accessKey:String, secretKey:String):String {
+        return ctx.call("test",accessKey, secretKey ) as String;
     }
 
     public function resizeWindow(x:Number = 0, y:Number = 0, width:Number = 0, height:Number = 0):Boolean {
