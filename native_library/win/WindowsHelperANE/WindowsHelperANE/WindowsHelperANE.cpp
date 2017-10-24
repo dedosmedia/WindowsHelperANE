@@ -33,6 +33,9 @@ extern "C" {
 			,MAP_FUNCTION(makeBottomWindow)
 			,MAP_FUNCTION(resizeWindow)
 			,MAP_FUNCTION(readIniValue)
+			// si genera errro missing msorelib.dll, seguramente ay un error en el mapeo de la funtion
+			,MAP_FUNCTION(aws)
+			,MAP_FUNCTION(resizeImage)
 
 		};
 
