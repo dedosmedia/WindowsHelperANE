@@ -18,6 +18,8 @@ using Amazon.S3;
 using System.Threading.Tasks;
 using Amazon.S3.Model;
 
+using ImageMagick;
+
 namespace WindowsHelperLib {
     public class MainController : FreSharpController {
         // ReSharper disable once NotAccessedField.Local
@@ -55,7 +57,9 @@ namespace WindowsHelperLib {
                     {"makeNoTopMostWindow", MakeNoTopMostWindow},
                     {"makeBottomWindow", MakeBottomWindow},
                     {"resizeWindow", ResizeWindow},
-                    {"readIniValue", ReadIniValue}
+                    {"readIniValue", ReadIniValue},
+                    {"aws", AWS},
+                    {"resizeImage", ResizeImage}
 
 
 
@@ -309,11 +313,122 @@ namespace WindowsHelperLib {
             Process.Start(info);
             return new FreObjectSharp(true).RawValue;
         }
-		
-		
-		/* DEDOSMEDIA FEATURES*/
-		
-		public FREObject FindTaskBar(FREContext ctx, uint argc, FREObject[] argv)
+
+
+        /* DEDOSMEDIA FEATURES*/
+        public FREObject AWS(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            
+            var accessKey = Convert.ToString(new FreObjectSharp(argv[0]).Value);
+            var secretKey = Convert.ToString(new FreObjectSharp(argv[1]).Value);
+            client = new AmazonS3Client(accessKey, secretKey, Amazon.RegionEndpoint.USEast1);
+            
+            Trace(" > AWS Client NOT initialized.");
+            return FREObject.Zero;
+        }
+
+        public FREObject ResizeImage(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            Trace("HEY I AM DONE");
+            
+            // Read from file
+            var newW = Convert.ToInt32(new FreObjectSharp(argv[1]).Value);
+            var newH = Convert.ToInt32(new FreObjectSharp(argv[2]).Value);
+            var array = new FREArray(new FreObjectSharp(argv[0]).RawValue);
+            var list = array.ToArrayList();
+            
+            using (MagickImageCollection collection = new MagickImageCollection())
+            {
+                string outputDir = "";
+                int i = 0;
+                foreach (String inputPath in list)
+                {
+                    FileInfo input = new FileInfo(inputPath);
+                    outputDir = input.Directory.CreateSubdirectory("small").FullName;
+                    FileInfo output = new FileInfo(outputDir + @"\" + input.Name);
+                    try
+                    {
+                        using (MagickImage image = new MagickImage(input))
+                        {
+                            MagickGeometry size = new MagickGeometry(newW, newH);
+                            image.Resize(size);
+                            // Save the result
+                            image.Write(output.FullName);
+                            collection.Add(output.FullName);
+                            collection[i].AnimationDelay = 200;
+                        }
+                    }
+                    // Catch any MagickException
+                    catch (MagickException exception)
+                    {
+                        // Write excepion raised when reading the invalid jpg to the console
+                        Trace(exception.Message);
+                        return new FreObjectSharp("").RawValue;
+                    }
+                    i++;
+                }
+
+                // Optionally reduce colors
+                QuantizeSettings settings = new QuantizeSettings();
+                settings.Colors = 256;
+                collection.Quantize(settings);
+
+                // Optionally optimize the images (images should have the same size).
+                collection.Optimize();
+                // Save gif
+                collection.Write(outputDir+@"\output.gif");
+                //uploadObject(new FileInfo(outputDir + @"\output.gif"));
+
+                return new FreObjectSharp(outputDir + @"\output.gif").RawValue;
+            }
+            
+        }
+
+        async void uploadObject(FileInfo filePath)
+        {
+            string data = await uploadObjectAsync(filePath);
+        }
+
+        async Task<string> uploadObjectAsync(FileInfo filePath)
+        {
+            string str = "DONE";
+            try
+            {              
+                PutObjectRequest request = new PutObjectRequest
+                {
+                    BucketName = "keshot-dedosmedia",
+                    Key = filePath.Name,
+                    FilePath = filePath.FullName,
+                    ContentType = "image/gif"
+                };
+                request.Metadata.Add("x-amz-meta-title", "someTitle");
+                Task<PutObjectResponse> answer = client.PutObjectAsync(request);
+                PutObjectResponse response = await answer;
+            }
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                if (amazonS3Exception.ErrorCode != null &&
+                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId")
+                    ||
+                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                {
+                    Console.WriteLine("Check the provided AWS Credentials.");
+                    Console.WriteLine(
+                    "To sign up for service, go to http://aws.amazon.com/s3");
+                }
+                else
+                {
+                   Trace(amazonS3Exception.Message);
+                }
+            }
+            return str;
+
+
+           
+           
+        }
+
+        public FREObject FindTaskBar(FREContext ctx, uint argc, FREObject[] argv)
         {
             
             Hwnd handler = WinApi.FindWindow("Shell_TrayWnd", null);
@@ -327,8 +442,6 @@ namespace WindowsHelperLib {
 
             _foundWindow = handler;
             return new FreObjectSharp("FindTaskBar:: FOUND!!!!!!!").RawValue;
-            
-            
         }
 
         public FREObject IsProgramRunning(FREContext ctx, uint argc, FREObject[] argv)
@@ -346,9 +459,7 @@ namespace WindowsHelperLib {
 
             var test = Convert.ToString(new FreObjectSharp(argv[0]).Value);
             string str = "Testing S3 client";
-            /*
-            Console.WriteLine("Listing objects stored in a bucket");
-
+            
             using (client = new AmazonS3Client(Amazon.RegionEndpoint.USEast1))
             {
                 str += "Listing objects stored in a bucket";
@@ -357,7 +468,7 @@ namespace WindowsHelperLib {
                 //SendEvent("MY_EVENT", "this is a test");
                 //Trace("HOLA MUNDO");
             }
-            */
+            
             Trace("Prueba de Test");
             return str.ToFREObject();
             //return new FreObjectSharp(str).RawValue;
@@ -380,7 +491,7 @@ namespace WindowsHelperLib {
             return value.ToString();
         }
 
-        /*
+        
         async void ListingObjects()
         {
             Trace("listingObject");
@@ -389,7 +500,6 @@ namespace WindowsHelperLib {
         }
 
         // List S3 bucket objects
-        
         async Task<string> ListingObjectsAsync()
         {
            
@@ -446,7 +556,7 @@ namespace WindowsHelperLib {
             }
             return str;
         }
-        */
+        
         
 
         public FREObject TestCV(FREContext ctx, uint argc, FREObject[] argv)
