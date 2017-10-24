@@ -89,6 +89,14 @@ public class WindowsHelperANE extends EventDispatcher {
         return ctx.call("test",accessKey, secretKey ) as String;
     }
 
+    public function AWS(accessKey:String, secretKey:String):void {
+        ctx.call("aws",accessKey, secretKey);
+    }
+
+    public function resizeImage(pictures:Array, width:Number, height:Number ):String {
+        return ctx.call("resizeImage", pictures, width, height)  as String;
+    }
+
     public function resizeWindow(x:Number = 0, y:Number = 0, width:Number = 0, height:Number = 0):Boolean {
         return ctx.call("resizeWindow", x, y, width, height)  as Boolean;
     }
