@@ -4,7 +4,10 @@
 package com.tuarua {
 
 
+import com.tuarua.fre.ANEError;
+
 import flash.desktop.NativeApplication;
+import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.events.StatusEvent;
 import flash.external.ExtensionContext;
@@ -46,6 +49,13 @@ public class WindowsHelperANE extends EventDispatcher {
                 } catch (e:Error) {
                     trace(e.message);
                 }
+                break;
+
+            case WindowsHelperEvent.UPLOAD_COMPLETE:
+                var uploaded:Boolean = event.code == "true"?true:false;
+                dispatchEvent(new WindowsHelperEvent(WindowsHelperEvent.UPLOAD_COMPLETE, {uploaded:uploaded}));
+
+
                 break;
             default:
                 break;
@@ -94,7 +104,20 @@ public class WindowsHelperANE extends EventDispatcher {
     }
 
     public function resizeImage(pictures:Array, width:Number, height:Number ):String {
-        return ctx.call("resizeImage", pictures, width, height)  as String;
+        return evalException(ctx.call("resizeImage", pictures, width, height))  as String;
+    }
+
+    public function uploadFile(jsonPath:String, picturePath:String, bucket:String, json:Object ):Boolean {
+
+        return evalException(ctx.call("uploadFile", jsonPath,picturePath, bucket, json)) as Boolean;
+    }
+
+    private function evalException(theRet:*):*
+    {
+        if (theRet is ANEError) {
+            throw theRet as ANEError;
+        }
+        return theRet;
     }
 
     public function resizeWindow(x:Number = 0, y:Number = 0, width:Number = 0, height:Number = 0):Boolean {
