@@ -12,15 +12,24 @@ public class ANEUtils {
     public function getClassProps(clz:*):Vector.<Object> {
         var ret:Vector.<Object> = new <Object>[];
         var xml:XML = describeType(clz);
-        for each (var prop:XML in xml.variable) {
-            var obj:Object = new Object();
-            obj.name = prop.@name.toString();
-            obj.type = prop.@type.toString();
-            ret.push(obj);
-            //trace(obj.name, obj.type);
+        if (xml.variable && xml.variable.length() > 0) {
+            for each (var prop:XML in xml.variable) {
+                var obj:Object = {};
+                obj.name = prop.@name.toString();
+                obj.type = prop.@type.toString();
+                ret.push(obj);
+            }
+        } else {
+            for(var id:String in clz) {
+                var objb:Object = {};
+                objb.name = id;
+                objb.type = getClassType(clz[id]);
+                ret.push(objb);
+            }
         }
         return ret;
     }
+
 
     public function getClassType(clz:*):String {
         var xml:XML = describeType(clz);
