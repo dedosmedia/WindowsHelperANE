@@ -19,6 +19,13 @@ using System.Threading.Tasks;
 using Amazon.S3.Model;
 
 using ImageMagick;
+using Amazon.S3.Transfer;
+
+
+using TuaRua.FreSharp.Exceptions;
+using System.Collections;
+using System.Net;
+using Amazon.Runtime;
 
 namespace WindowsHelperLib {
     public class MainController : FreSharpController {
@@ -30,7 +37,8 @@ namespace WindowsHelperLib {
         private bool _isHotKeyManagerRegistered;
         private AmazonS3Client client;
 
-        
+        private bool _uploadInProgress = false;
+        private DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public string[] GetFunctions() {
             FunctionsDict =
@@ -59,7 +67,8 @@ namespace WindowsHelperLib {
                     {"resizeWindow", ResizeWindow},
                     {"readIniValue", ReadIniValue},
                     {"aws", AWS},
-                    {"resizeImage", ResizeImage}
+                    {"resizeImage", ResizeImage},
+                    {"uploadFile", UploadFile}
 
 
 
@@ -255,7 +264,7 @@ namespace WindowsHelperLib {
                 }
             }
             catch (Exception e) {
-                Trace(e.Message);
+                Trace("ERROR: "+e);
             }
 
             return vecDisplayDevices.RawValue;
@@ -323,111 +332,226 @@ namespace WindowsHelperLib {
             var secretKey = Convert.ToString(new FreObjectSharp(argv[1]).Value);
             client = new AmazonS3Client(accessKey, secretKey, Amazon.RegionEndpoint.USEast1);
             
-            Trace(" > AWS Client NOT initialized.");
+            Trace(" > AWS Client initialized.");
             return FREObject.Zero;
         }
 
         public FREObject ResizeImage(FREContext ctx, uint argc, FREObject[] argv)
         {
-            Trace("HEY I AM DONE");
-            
             // Read from file
-            var newW = Convert.ToInt32(new FreObjectSharp(argv[1]).Value);
-            var newH = Convert.ToInt32(new FreObjectSharp(argv[2]).Value);
-            var array = new FREArray(new FreObjectSharp(argv[0]).RawValue);
-            var list = array.ToArrayList();
+
             
-            using (MagickImageCollection collection = new MagickImageCollection())
-            {
-                string outputDir = "";
-                int i = 0;
-                foreach (String inputPath in list)
+
+            try {
+                
+                var newW = Convert.ToInt32(new FreObjectSharp(argv[1]).Value);
+                var newH = Convert.ToInt32(new FreObjectSharp(argv[2]).Value);
+                var array = new FREArray(new FreObjectSharp(argv[0]).RawValue);
+                var list = array.ToArrayList();
+                
+                using (MagickImageCollection collection = new MagickImageCollection())
                 {
-                    FileInfo input = new FileInfo(inputPath);
-                    outputDir = input.Directory.CreateSubdirectory("small").FullName;
-                    FileInfo output = new FileInfo(outputDir + @"\" + input.Name);
-                    try
+                    string outputDir = "";
+                    int i = 0;
+                    foreach (String inputPath in list)
                     {
-                        using (MagickImage image = new MagickImage(input))
+                        FileInfo input = new FileInfo(inputPath);
+                        outputDir = input.Directory.CreateSubdirectory("small").FullName;
+                        FileInfo output = new FileInfo(outputDir + @"\" + input.Name);
+
+                        
+                        try
                         {
-                            MagickGeometry size = new MagickGeometry(newW, newH);
-                            image.Resize(size);
-                            // Save the result
-                            image.Write(output.FullName);
-                            collection.Add(output.FullName);
-                            collection[i].AnimationDelay = 200;
+
+                            using (MagickImage image = new MagickImage(input))
+                            {
+                                MagickGeometry size = new MagickGeometry(newW, newH);
+                                //image.Resize(size);  genera un ciclo infinito en v84
+                                image.AdaptiveResize(size);
+                                // Save the result
+                                image.Write(output.FullName);
+                                collection.Add(output.FullName);
+                                collection[i].AnimationDelay = 200;
+                            }
                         }
+                        // Catch any MagickException
+                        catch (MagickException exception)
+                        {
+                            // Write excepion raised when reading the invalid jpg to the console
+                            Trace("ERROR: " + exception);
+                            return new FreException(exception).RawValue;
+                        }
+
+                        
+                        i++;
                     }
-                    // Catch any MagickException
-                    catch (MagickException exception)
-                    {
-                        // Write excepion raised when reading the invalid jpg to the console
-                        Trace(exception.Message);
-                        return new FreObjectSharp("").RawValue;
-                    }
-                    i++;
+
+                    // Optionally reduce colors
+                    QuantizeSettings settings = new QuantizeSettings();
+                    settings.Colors = 256;
+                    collection.Quantize(settings);
+
+                    // Optionally optimize the images (images should have the same size).
+                    collection.Optimize();
+                    // Save gif
+                    collection.Write(outputDir + @"\output.gif");
+
+                    return new FreObjectSharp(outputDir + @"\output.gif").RawValue;
                 }
+            }
 
-                // Optionally reduce colors
-                QuantizeSettings settings = new QuantizeSettings();
-                settings.Colors = 256;
-                collection.Quantize(settings);
+            catch (Exception e) {
 
-                // Optionally optimize the images (images should have the same size).
-                collection.Optimize();
-                // Save gif
-                collection.Write(outputDir+@"\output.gif");
-                //uploadObject(new FileInfo(outputDir + @"\output.gif"));
+                Trace("Exception " + e);
+            }
 
-                return new FreObjectSharp(outputDir + @"\output.gif").RawValue;
+            return FREObject.Zero;
+
+
+        }
+
+        public FREObject UploadFile(FREContext ctx, uint argc, FREObject[] argv)
+        {
+            if (_uploadInProgress == true)
+            {
+                return false.ToFREObject();
+            }
+            uploadObject(argv);
+            return true.ToFREObject();   
+        }
+
+
+
+        async void uploadObject(FREObject[] argv)
+        {
+            var jsonFile = new FileInfo(argv[0].AsString());
+            var pictureFile = new FileInfo(argv[1].AsString());
+            if (!jsonFile.Exists || !pictureFile.Exists)
+            {
+                Trace("> UPLOAD PROCESS: [FILE NOT EXIST] - " + jsonFile.Name+" OR "+ pictureFile.Name);
+                return;
+            }
+
+            _uploadInProgress = true;
+            int returnCode = await uploadObjectAsync(argv);
+            _uploadInProgress = false;
+
+            if (returnCode == 0)
+            {
+                Trace("> UPLOAD PROCESS: [FINISHED (1)] - " + jsonFile.Name);
+                moveFileToSubdirectory(jsonFile, "done");
+                moveFileToSubdirectory(pictureFile, "done");
+            }
+            else if (returnCode < 0)
+            {
+                Trace("> UPLOAD PROCESS: [FAILED] - " + jsonFile.Name);
+                
+                moveFileToSubdirectory(jsonFile, "error");
+                moveFileToSubdirectory(pictureFile, "error");
+
+            }
+            else {
+                Trace("> UPLOAD PROCESS: [NETWORK ERROR - RETRY LATER]");
+            }
+
+            // NOTIFICAR EVENTO, PARA INICIAR NUEVAMENTE EL PROCESO, SOLO CUANDO NO HAY ERROR DE RED
+            if (returnCode <= 0)
+            {
+                SendEvent("UPLOAD_COMPLETE", "");
             }
             
         }
 
-        async void uploadObject(FileInfo filePath)
-        {
-            string data = await uploadObjectAsync(filePath);
-        }
 
-        async Task<string> uploadObjectAsync(FileInfo filePath)
+        private void moveFileToSubdirectory(FileInfo srcFile, string subdirectory)
         {
-            string str = "DONE";
-            try
-            {              
-                PutObjectRequest request = new PutObjectRequest
+            if (srcFile.Exists)
+            {
+                try
                 {
-                    BucketName = "keshot-dedosmedia",
-                    Key = filePath.Name,
-                    FilePath = filePath.FullName,
-                    ContentType = "image/gif"
-                };
-                request.Metadata.Add("x-amz-meta-title", "someTitle");
-                Task<PutObjectResponse> answer = client.PutObjectAsync(request);
-                PutObjectResponse response = await answer;
+                    DirectoryInfo dstDirectory = srcFile.Directory.Parent.CreateSubdirectory(subdirectory);
+                    string dstPath = dstDirectory.FullName + "\\" + srcFile.Name;
+                    srcFile.CopyTo(dstPath, true);
+                    srcFile.Delete();
+                }
+                catch (Exception ex)
+                {
+                    Trace("ERROR MOVING/DELETING FILE " + ex);
+                }
             }
+            else
+            {
+                Trace("ERROR MOVING FILE. SRC NOT EXIST "+ srcFile.Name);
+            }
+        }
+        
+        async Task<int> uploadObjectAsync(FREObject[] argv)
+        {
+            int returnCode = 0;
+            try
+            {
+                var jsonFile = new FileInfo(argv[0].AsString());
+                var pictureFile = new FileInfo(argv[1].AsString());
+                var bucket = argv[2].AsString();
+                var metadata = argv[3].AsDictionary();
+                var locationCode = metadata["location-code"].ToString();
+                var kioskCode = metadata["kiosk-code"].ToString();
+                var sessionDate = Convert.ToDouble(metadata["epoch"].ToString());
+                var date = epoch.AddSeconds(sessionDate);
+                TransferUtility fileTransferUtility = new TransferUtility(client);
+                TransferUtilityUploadRequest fileTransferUtilityRequest = new TransferUtilityUploadRequest
+                {
+                    BucketName = bucket,
+                    FilePath = pictureFile.FullName,
+                    Key = date.ToString("yyyy") + "/" + date.ToString("MM") + "/" + locationCode + "/" + kioskCode + "/" + date.ToString("yyyy-MM-dd") + "/" + pictureFile.Name,
+                    StorageClass = S3StorageClass.StandardInfrequentAccess,
+                    CannedACL = S3CannedACL.PublicRead
+                };
+
+                foreach (KeyValuePair<string, object> pair in metadata)
+                {
+                    fileTransferUtilityRequest.Metadata.Add("x-amz-meta-" + pair.Key, pair.Value.ToString());
+                }
+                await fileTransferUtility.UploadAsync(fileTransferUtilityRequest);
+            }
+          
             catch (AmazonS3Exception amazonS3Exception)
             {
+                returnCode = 1;  // Credencials invalidas
                 if (amazonS3Exception.ErrorCode != null &&
                     (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId")
                     ||
                     amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
                 {
-                    Console.WriteLine("Check the provided AWS Credentials.");
-                    Console.WriteLine(
-                    "To sign up for service, go to http://aws.amazon.com/s3");
+                    Trace("[ERROR] - Check the provided AWS Credentials.");
+
                 }
                 else
                 {
-                   Trace(amazonS3Exception.Message);
+                    Trace("[ERROR] - " + amazonS3Exception);
                 }
             }
-            return str;
+            catch (AmazonServiceException ex)
+            {
+                Trace("[ERROR] - AMAZON SERVICE EXCEPTION " + ex);
+                returnCode = 2; // Error de red, no hay internet posiblemnte?
+            }
+            catch (KeyNotFoundException ex)
+            {
+                returnCode = -1;  // json mal formado... mover a error
+                Trace("[ERROR] - METADATA KEY NOT FOUND " + ex);
+            }
+            catch (Exception ex)
+            {
+                returnCode = -2; // Error generic, no sabemos, mover a error
+                Trace("[ERROR] - UNKNOWN ERROR " + ex);
+            }
 
-
-           
-           
+            return returnCode;
         }
 
+
+ 
         public FREObject FindTaskBar(FREContext ctx, uint argc, FREObject[] argv)
         {
             
@@ -551,7 +675,7 @@ namespace WindowsHelperLib {
                 {
                     Console.WriteLine(
                      "Error occurred. Message:'{0}' when listing objects",
-                     amazonS3Exception.Message);
+                     amazonS3Exception);
                 }
             }
             return str;

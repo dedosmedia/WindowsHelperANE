@@ -12,7 +12,7 @@ xcopy %pathtome%..\..\c_sharp_libs_x86 %AIR_PATH%\Keshot\WindowsHelperANE\dll\ /
 REM xcopy %pathtome%..\..\c_sharp_libs_x64 %AIR_PATH_64%\Keshot\WindowsHelperANE\dll\ /Y
 
 cd /d %AIR_PATH%\Keshot\
-call Package.bat
+call CaptiveInstaller.bat
 
 REM cd /d %AIR_PATH_64%\Keshot\
 REM call Package.bat

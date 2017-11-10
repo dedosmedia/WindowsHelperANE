@@ -78,7 +78,6 @@ REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x
 copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Debug\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_x86\AWSSDK.S3.dll
 REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_x64\AWSSDK.S3.dll
 copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Debug\Magick.NET-Q16-AnyCPU.dll %pathtome%..\..\c_sharp_libs_x86\Magick.NET-Q16-AnyCPU.dll
-copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Debug\Newtonsoft.Json.dll %pathtome%..\..\c_sharp_libs_x86\Newtonsoft.Json.dll
 
 
 

@@ -20,9 +20,9 @@ namespace WindowsHelperLib {
             Context.SendEvent("TRACE", value);
         }
 
-        public void SendEvent(string value)
+        public void SendEvent(string e,string value)
         {
-            Context.SendEvent("TRACE", value);
+            Context.SendEvent(e, value);
         }
 
     }

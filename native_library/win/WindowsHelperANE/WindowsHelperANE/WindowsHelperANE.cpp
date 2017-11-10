@@ -36,6 +36,7 @@ extern "C" {
 			// si genera errro missing msorelib.dll, seguramente ay un error en el mapeo de la funtion
 			,MAP_FUNCTION(aws)
 			,MAP_FUNCTION(resizeImage)
+			,MAP_FUNCTION(uploadFile)
 
 		};
 
