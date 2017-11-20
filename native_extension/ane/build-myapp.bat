@@ -1,20 +1,20 @@
-REM Get the path to the script and trim to get the directory.
 @echo off
-SET AIR_PATH="C:\Users\Diego\Desktop\AIR_SDK_27.124\bin\"
-SET AIR_PATH_64="C:\Users\Diego\Desktop\AIRSDK_26.123_x64\bin\"
+SET CUSTOM_SETUP="E:\Dropbox\DedosMedia\keshot\Keshot-PhotoBooth\Custom-Setup\"
 
-echo Copying Native Extension to AIRSDK subfolder (to make it easy to package my App using this ANE)
-copy %pathtome%%projectName%.ane %AIR_PATH%\Keshot\WindowsHelperANE\ane\%projectName%.ane
-REM copy %pathtome%%projectName%.ane %AIR_PATH_64%\Keshot\WindowsHelperANE\ane\%projectName%.ane
+echo Copying Native Extension to Custom Setup (to make it easy to package my App using this ANE)
+copy %pathtome%%projectName%.ane %CUSTOM_SETUP%\Keshot\%projectName%\ane\%projectName%.ane
 
 echo Copying required dlls
-xcopy %pathtome%..\..\c_sharp_libs_x86 %AIR_PATH%\Keshot\WindowsHelperANE\dll\ /Y
-REM xcopy %pathtome%..\..\c_sharp_libs_x64 %AIR_PATH_64%\Keshot\WindowsHelperANE\dll\ /Y
+xcopy %pathtome%..\..\c_sharp_libs_%PLATFORM% %CUSTOM_SETUP%\Keshot\%projectName%\dll\ /Y
 
-cd /d %AIR_PATH%\Keshot\
-call CaptiveInstaller.bat
+echo Copying unzipped ANE for adl debug
+call %SZIP% x %pathtome%%projectName%.ane -o%CUSTOM_SETUP%\Keshot\%projectName%\unzip\%projectName%.ane -aoa
+xcopy %pathtome%..\..\c_sharp_libs_%PLATFORM% %CUSTOM_SETUP%\Keshot\%projectName%\dll\ /Y
 
-REM cd /d %AIR_PATH_64%\Keshot\
-REM call Package.bat
+cd /d %CUSTOM_SETUP%\Keshot\
 
-echo DONE Packaging x86 and x64
+echo Packaing myapp %AIR_PATH%
+call %AIR_PATH%adt.bat -package -storetype PKCS12 -keystore cert.p12 -storepass aristi82 -tsa none -target bundle DedosMedia Keshot-AIR-Windows-app.xml -extdir %projectName%/ane Keshot_windows.swf -C %projectName%/dll . -C data .
+
+
+echo ---=== CAPTIVE INSTALLER %PLATFORM% DONE ===---

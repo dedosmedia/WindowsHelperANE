@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<extension xmlns="http://ns.adobe.com/air/extension/26.0">
+<extension xmlns="http://ns.adobe.com/air/extension/28.0">
     <id>com.tuarua.WindowsHelperANE</id>
     <name>Windows Helper ANE</name>
     <copyright>his work is licensed under MIT License, Copyright (c) 2017 Tua Rua Ltd.</copyright>
-    <versionNumber>0.0.8</versionNumber>
+    <versionNumber>0.0.9</versionNumber>
 	<platforms>
         <platform name="Windows-x86">
             <applicationDeployment>
@@ -12,5 +12,15 @@
                 <finalizer>TRWHExtFinizer</finalizer>
             </applicationDeployment>
         </platform>
-	</platforms>
+        <platform name="Windows-x86-64">
+          <applicationDeployment>
+            <nativeLibrary>WindowsHelperANE.dll</nativeLibrary>
+            <initializer>TRWHExtInizer</initializer>
+            <finalizer>TRWHExtFinizer</finalizer>
+          </applicationDeployment>
+        </platform>
+        <platform name="default">
+          <applicationDeployment/>
+        </platform>
+  </platforms>
 </extension>

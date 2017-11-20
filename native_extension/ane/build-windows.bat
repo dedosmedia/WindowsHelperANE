@@ -1,96 +1,91 @@
-REM Get the path to the script and trim to get the directory.
 @echo off
+
+REM  Debug/Release
+SET CONFIG_NAME=%1
+REM x86/x64
+SET PLATFORM=%2
+
+SET AIR_PATH=E:\DedosMedia\AIRSDK\WINDOWS\x86\AIR28.0.0.112B\bin\
+SET AIR_PATH_64=E:\DedosMedia\AIRSDK\WINDOWS\x64\AIR28.0.0.112B\bin\
+IF "%PLATFORM%" == "x64" (SET AIR_PATH=%AIR_PATH_64%)
 SET SZIP="C:\Program Files\7-Zip\7z.exe"
-SET AIR_PATH="C:\Users\Diego\Desktop\AIR_SDK_27.124\bin\"
-SET AIR_PATH_64="C:\Users\Diego\Desktop\AIRSDK_26.123_x64\bin\"
-echo Setting path to current directory to:
-SET pathtome=%~dp0
-echo %pathtome%
-
 SET projectName=WindowsHelperANE
+SET pathtome=%~dp0
 
-REM Setup the directory.
-echo Making directories.
+echo Project: %projectName% Config: %CONFIG_NAME% Platform: %PLATFORM%
+echo PathToMe: %pathtome% AIR_SDK: %AIR_PATH% 7ZIP: %SZIP%
 
+
+
+echo Making Platforms directories.
 IF NOT EXIST %pathtome%platforms mkdir %pathtome%platforms
 IF NOT EXIST %pathtome%platforms\win  %pathtome%platforms\win
-IF NOT EXIST %pathtome%platforms\win\x86  %pathtome%platforms\win\x86
-IF NOT EXIST %pathtome%platforms\win\x86\release mkdir %pathtome%platforms\win\x86\release
-IF NOT EXIST %pathtome%platforms\win\x64  %pathtome%platforms\win\x64
-IF NOT EXIST %pathtome%platforms\win\x64\release mkdir %pathtome%platforms\win\x64\release
+IF NOT EXIST %pathtome%platforms\win\%PLATFORM% mkdir %pathtome%platforms\win\%PLATFORM%
+IF NOT EXIST %pathtome%platforms\win\%PLATFORM%\%CONFIG_NAME% mkdir %pathtome%platforms\win\%PLATFORM%\%CONFIG_NAME%
 
-REM Copy SWC into place.
-echo Copying SWC into place.
-echo %pathtome%..\bin\%projectName%.swc
-copy %pathtome%..\bin\%projectName%.swc %pathtome%
 
-REM contents of SWC.
-echo Extracting files form SWC.
-echo %pathtome%%projectName%.swc
-copy %pathtome%%projectName%.swc %pathtome%%projectName%Extract.swc
-ren %pathtome%%projectName%Extract.swc %projectName%Extract.zip
-
-call %SZIP% e %pathtome%%projectName%Extract.zip -o%pathtome%
-
-del %pathtome%%projectName%Extract.zip
-
-REM Copy library.swf to folders.
 echo Copying library.swf into place.
-copy %pathtome%library.swf %pathtome%platforms\win\x86\release
-REM copy %pathtome%library.swf %pathtome%platforms\win\x64\release
+call %SZIP% x %pathtome%..\bin\%projectName%.swc -o%pathtome% library.swf -aoa
+copy %pathtome%library.swf %pathtome%platforms\win\%PLATFORM%\%CONFIG_NAME%
 
 
-REM Copy native libraries into place.
+
+REM echo Copying SWC into place.
+REM echo %pathtome%..\bin\%projectName%.swc
+REM copy %pathtome%..\bin\%projectName%.swc %pathtome%
+
+REM echo Extracting files forom SWC.
+REM echo %pathtome%%projectName%.swc
+REM copy %pathtome%%projectName%.swc %pathtome%%projectName%Extract.swc
+REM ren %pathtome%%projectName%Extract.swc %projectName%Extract.zip
+
+REM call %SZIP% e %pathtome%%projectName%Extract.zip -o%pathtome%
+REM del %pathtome%%projectName%Extract.zip
+
+REM echo Copying library.swf into place.
+REM  copy %pathtome%library.swf %pathtome%platforms\win\%PLATFORM%\%CONFIG_NAME%
+
 echo Copying native libraries into place.
 echo Copying %projectName%.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%.dll %pathtome%platforms\win\x86\release
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%.dll %pathtome%platforms\win\x64\release
-
-echo Copying %projectName%Lib.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%Lib.dll %AIR_PATH%%projectName%Lib.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%Lib.pdb %AIR_PATH%%projectName%Lib.pdb
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%Lib.dll %AIR_PATH_64%%projectName%Lib.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%Lib.pdb %AIR_PATH_64%%projectName%Lib.pdb
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\%projectName%Lib.dll %pathtome%..\..\c_sharp_libs_x86\%projectName%Lib.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\%projectName%Lib.dll %pathtome%..\..\c_sharp_libs_x64\%projectName%Lib.dll
-
-echo Copying FreSharpCore.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharpCore.dll %AIR_PATH%FreSharpCore.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharpCore.pdb %AIR_PATH%FreSharpCore.pdb
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharpCore.dll %AIR_PATH_64%FreSharpCore.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharpCore.pdb %AIR_PATH_64%FreSharpCore.pdb
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharpCore.dll %pathtome%..\..\c_sharp_libs_x64\FreSharpCore.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharpCore.dll %pathtome%..\..\c_sharp_libs_x86\FreSharpCore.dll
-
-echo Copying FreSharp.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharp.dll %pathtome%..\..\c_sharp_libs_x86\FreSharp.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharp.dll %pathtome%..\..\c_sharp_libs_x64\FreSharp.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharp.dll %AIR_PATH%FreSharp.dll
-copy %pathtome%..\..\native_library\win\%projectName%\x86\Release\FreSharp.pdb %AIR_PATH%FreSharp.pdb
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharp.dll %AIR_PATH_64%FreSharp.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\x64\Release\FreSharp.pdb %AIR_PATH_64%FreSharp.pdb
-
-echo Copying dlls from Nuget packages
-copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\DotNetZip.dll %pathtome%..\..\c_sharp_libs_x86\DotNetZip.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\DotNetZip.dll %pathtome%..\..\c_sharp_libs_x64\DotNetZip.dll
-copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\AWSSDK.Core.dll %pathtome%..\..\c_sharp_libs_x86\AWSSDK.Core.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\AWSSDK.Core.dll %pathtome%..\..\c_sharp_libs_x64\AWSSDK.Core.dll
-copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_x86\AWSSDK.S3.dll
-REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x64\Release\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_x64\AWSSDK.S3.dll
-copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\x86\Release\Magick.NET-Q16-AnyCPU.dll %pathtome%..\..\c_sharp_libs_x86\Magick.NET-Q16-AnyCPU.dll
+copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\%projectName%.dll %pathtome%platforms\win\%PLATFORM%\%CONFIG_NAME%
 
 
 
-REM Run the build command.
-echo Building Release.
-call %AIR_PATH%adt.bat -package -target ane %pathtome%%projectName%.ane %pathtome%extension_win.xml -swc %pathtome%%projectName%.swc ^
--platform Windows-x86 -C %pathtome%platforms\win\x86\release %projectName%.dll library.swf
-REM ^ -platform Windows-x86-64 -C %pathtome%platforms\win\x64\release %projectName%.dll library.swf
+REM echo Copying %projectName%Lib.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\%projectName%Lib.dll %AIR_PATH%%projectName%Lib.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\%projectName%Lib.pdb %AIR_PATH%%projectName%Lib.pdb
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\%projectName%Lib.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\%projectName%Lib.dll
+REM echo Copying FreSharpCore.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\FreSharpCore.dll %AIR_PATH%FreSharpCore.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\FreSharpCore.pdb %AIR_PATH%FreSharpCore.pdb
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\FreSharpCore.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\FreSharpCore.dll
+REM echo Copying FreSharp.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\FreSharp.dll %AIR_PATH%FreSharp.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\FreSharp.pdb %AIR_PATH%FreSharp.pdb
+REM copy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\FreSharp.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\FreSharp.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\%PLATFORM%\%CONFIG_NAME%\DotNetZip.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\DotNetZip.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\%PLATFORM%\%CONFIG_NAME%\AWSSDK.Core.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\AWSSDK.Core.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\%PLATFORM%\%CONFIG_NAME%\AWSSDK.S3.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\AWSSDK.S3.dll
+REM copy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\%PLATFORM%\%CONFIG_NAME%\Magick.NET-Q16-AnyCPU.dll %pathtome%..\..\c_sharp_libs_%PLATFORM%\Magick.NET-Q16-AnyCPU.dll
 
-call DEL /F /Q /A %pathtome%%projectName%.swc
+echo Copying required dlls 
+xcopy %pathtome%..\..\native_library\win\%projectName%\WindowsHelperLib\bin\%PLATFORM%\%CONFIG_NAME%\*.dll %pathtome%..\..\c_sharp_libs_%PLATFORM% /Y
+
+echo Copying dll and pdb for debugging into %AIR_PATH%
+xcopy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\*.pdb %AIR_PATH% /Y
+xcopy %pathtome%..\..\native_library\win\%projectName%\%PLATFORM%\%CONFIG_NAME%\*.dll %AIR_PATH% /Y
+
+echo Building %CONFIG_NAME%.
+call %AIR_PATH%adt.bat -package -target ane %pathtome%%projectName%.ane %pathtome%extension_win.xml -swc %pathtome%..\bin\%projectName%.swc ^
+-platform Windows-x86 -C %pathtome%platforms\win\x86\%CONFIG_NAME% %projectName%.dll library.swf ^
+-platform Windows-x86-64 -C %pathtome%platforms\win\x64\%CONFIG_NAME% %projectName%.dll library.swf ^
+-platform default -C %pathtome% "library.swf"
+
+REM call DEL /F /Q /A %pathtome%%projectName%.swc
 call DEL /F /Q /A %pathtome%library.swf
-call DEL /F /Q /A %pathtome%catalog.xml
+REM call DEL /F /Q /A %pathtome%catalog.xml
 
-echo FIN
+echo ---=== BUILD ANE DONE ===---
+
 
 call %pathtome%build-myapp.bat

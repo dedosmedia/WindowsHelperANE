@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WindowsHelperANE</RootNamespace>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -64,15 +64,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Settings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Settings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Settings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Settings.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -106,13 +110,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;$(TargetName)_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Diego\Desktop\AIR_SDK_27.124\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AIR_PATH)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Diego\Desktop\AIR_SDK_27.124\lib\win</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(AIR_PATH)\lib\win</AdditionalLibraryDirectories>
       <AdditionalDependencies>FlashRuntimeExtensions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
@@ -120,7 +124,7 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>$(ProjectDir)..\..\..\..\native_extension\ane\debug-windows.bat</Command>
+      <Command>call $(ProjectDir)..\..\..\..\native_extension\ane\build-windows.bat $(ConfigurationName) $(PlatformTarget)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,16 +134,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Diego\Desktop\AIRSDK_26.123_x64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AIR_PATH_x64)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Diego\Desktop\AIRSDK_26.123_x64\lib\win</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(AIR_PATH_x64)\lib\win</AdditionalLibraryDirectories>
       <AdditionalDependencies>FlashRuntimeExtensions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>$(ProjectDir)..\..\..\..\native_extension\ane\debug-windows.bat</Command>
+      <Command>call $(ProjectDir)..\..\..\..\native_extension\ane\build-windows.bat $(ConfigurationName) $(PlatformTarget)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,7 +155,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;$(TargetName)_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Diego\Desktop\AIR_SDK_27.124\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AIR_PATH)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -159,7 +163,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\Diego\Desktop\AIR_SDK_27.124\lib\win</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(AIR_PATH)\lib\win</AdditionalLibraryDirectories>
       <AdditionalDependencies>FlashRuntimeExtensions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
@@ -167,7 +171,7 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>call $(ProjectDir)..\..\..\..\native_extension\ane\build-windows.bat</Command>
+      <Command>call $(ProjectDir)..\..\..\..\native_extension\ane\build-windows.bat $(ConfigurationName) $(PlatformTarget)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -179,18 +183,18 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Diego\Desktop\AIRSDK_26.123_x64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AIR_PATH_x64)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\Diego\Desktop\AIRSDK_26.123_x64\lib\win</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(AIR_PATH_x64)\lib\win</AdditionalLibraryDirectories>
       <AdditionalDependencies>FlashRuntimeExtensions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>$(ProjectDir)..\..\..\..\native_extension\ane\build-windows.bat</Command>
+      <Command>call $(ProjectDir)..\..\..\..\native_extension\ane\build-windows.bat $(ConfigurationName) $(PlatformTarget)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
