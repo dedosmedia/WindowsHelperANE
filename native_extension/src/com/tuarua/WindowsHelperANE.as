@@ -137,8 +137,8 @@ public class WindowsHelperANE extends EventDispatcher {
         return ctx.call("makeBottomWindow")  as Boolean;
     }
 
-    public function grayImage():BitmapData {
-        return  evalException(ctx.call("grayImage")) as BitmapData;
+    public function grayImage(bmd:BitmapData):BitmapData {
+        return  evalException(ctx.call("grayImage", bmd)) as BitmapData;
     }
 
 
