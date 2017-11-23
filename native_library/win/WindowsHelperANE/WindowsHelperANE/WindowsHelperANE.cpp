@@ -38,6 +38,8 @@ extern "C" {
 			,MAP_FUNCTION(resizeImage)
 			,MAP_FUNCTION(uploadFile)
 
+			,MAP_FUNCTION(grayImage)
+
 		};
 
 		SET_FUNCTIONS

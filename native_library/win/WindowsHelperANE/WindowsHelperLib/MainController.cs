@@ -26,6 +26,7 @@ using TuaRua.FreSharp.Exceptions;
 using System.Collections;
 using System.Net;
 using Amazon.Runtime;
+using TuaRua.FreSharp.Display;
 
 namespace WindowsHelperLib {
     public class MainController : FreSharpController {
@@ -68,7 +69,9 @@ namespace WindowsHelperLib {
                     {"readIniValue", ReadIniValue},
                     {"aws", AWS},
                     {"resizeImage", ResizeImage},
-                    {"uploadFile", UploadFile}
+                    {"uploadFile", UploadFile},
+
+                    {"grayImage", GrayImage}
 
 
 
@@ -78,6 +81,54 @@ namespace WindowsHelperLib {
         }
 
         public FREObject NotImplemented(FREContext ctx, uint argc, FREObject[] argv) {
+            return FREObject.Zero;
+        }
+        private static void SepiaTone(FreBitmapDataSharp freBitmapDataSharp)
+        {
+            freBitmapDataSharp.Acquire();
+            var ptr = freBitmapDataSharp.Bits32;
+            var byteBuffer = new byte[freBitmapDataSharp.LineStride32 * freBitmapDataSharp.Height * 4];
+            Marshal.Copy(ptr, byteBuffer, 0, byteBuffer.Length);
+            const byte maxValue = 255;
+            for (var k = 0; k < byteBuffer.Length; k += 4)
+            {
+                var r = byteBuffer[k] * 0.189f + byteBuffer[k + 1] * 0.769f + byteBuffer[k + 2] * 0.393f;
+                var g = byteBuffer[k] * 0.168f + byteBuffer[k + 1] * 0.686f + byteBuffer[k + 2] * 0.349f;
+                var b = byteBuffer[k] * 0.131f + byteBuffer[k + 1] * 0.534f + byteBuffer[k + 2] * 0.272f;
+
+                byteBuffer[k + 2] = r > maxValue ? maxValue : (byte)r;
+                byteBuffer[k + 1] = g > maxValue ? maxValue : (byte)g;
+                byteBuffer[k] = b > maxValue ? maxValue : (byte)b;
+            }
+
+            Marshal.Copy(byteBuffer, 0, ptr, byteBuffer.Length);
+            freBitmapDataSharp.InvalidateBitmapDataRect(0, 0, Convert.ToUInt32(freBitmapDataSharp.Width),
+                Convert.ToUInt32(freBitmapDataSharp.Height));
+            freBitmapDataSharp.Release();
+        }
+
+
+        public FREObject GrayImage(FREContext ctx, uint argc, FREObject[] argv)
+        {
+
+            var inFre = argv[0];
+
+            if(inFre == FREObject.Zero)
+                return FREObject.Zero;
+
+            try
+            {
+                var bmd = new FreBitmapDataSharp(inFre);
+                SepiaTone(bmd);
+
+                return new FreBitmapDataSharp(inFre).RawValue;
+            }
+            catch (Exception ex)
+            {
+                Trace(ex.Message);
+            }
+
+
             return FREObject.Zero;
         }
 
