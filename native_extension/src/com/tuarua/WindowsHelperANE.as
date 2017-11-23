@@ -7,6 +7,7 @@ package com.tuarua {
 import com.tuarua.fre.ANEError;
 
 import flash.desktop.NativeApplication;
+import flash.display.BitmapData;
 import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.events.StatusEvent;
@@ -134,6 +135,10 @@ public class WindowsHelperANE extends EventDispatcher {
 
     public function makeBottomWindow():Boolean {
         return ctx.call("makeBottomWindow")  as Boolean;
+    }
+
+    public function grayImage():BitmapData {
+        return  evalException(ctx.call("grayImage")) as BitmapData;
     }
 
 
