@@ -121,7 +121,9 @@ namespace WindowsHelperLib {
                 var bmd = new FreBitmapDataSharp(inFre);
                 SepiaTone(bmd);
 
-                return new FreBitmapDataSharp(inFre).RawValue;
+
+
+                return bmd.RawValue;
             }
             catch (Exception ex)
             {
